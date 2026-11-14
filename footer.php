@@ -1,0 +1,1 @@
+</div><footer class="footer"><span>NetTrack · Network Equipment Inventory System</span><span>School project edition · Local database</span></footer></main></div><script src="assets/app.js"></script></body></html>

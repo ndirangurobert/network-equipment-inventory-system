@@ -1,0 +1,14 @@
+<?php
+require_once __DIR__.'/config.php';
+require_login();
+$pageTitle = $pageTitle ?? 'Dashboard';
+$current = basename($_SERVER['PHP_SELF']);
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?=e($pageTitle)?> · NetTrack</title><link rel="stylesheet" href="assets/style.css"></head><body>
+<div class="app"><aside class="sidebar"><a class="side-brand" href="dashboard.php"><div class="brand-mark">NI</div><div><b>NetTrack</b><small>ASSET MANAGEMENT</small></div></a><div class="side-label">WORKSPACE</div><nav>
+<a class="<?= $current==='dashboard.php'?'active':''?>" href="dashboard.php"><span>▦</span> Dashboard</a>
+<a class="<?= $current==='equipment.php'?'active':''?>" href="equipment.php"><span>▤</span> Equipment register</a>
+<a class="<?= $current==='equipment_form.php'?'active':''?>" href="equipment_form.php"><span>＋</span> Add equipment</a>
+<a class="<?= $current==='maintenance.php'?'active':''?>" href="maintenance.php"><span>⚒</span> Maintenance</a>
+<a class="<?= $current==='reports.php'?'active':''?>" href="reports.php"><span>▥</span> Reports & export</a>
+</nav><div class="sidebar-bottom"><div class="side-label">SYSTEM</div><a href="about.php" class="<?= $current==='about.php'?'active':''?>"><span>ⓘ</span> Project information</a><div class="side-user"><div class="avatar"><?=e(strtoupper(substr($_SESSION['full_name'] ?? 'A',0,1)))?></div><div><b><?=e($_SESSION['full_name'] ?? 'Administrator')?></b><small><?=e($_SESSION['role'] ?? 'Administrator')?></small></div></div><a href="logout.php" class="logout-link"><span>↪</span> Sign out</a></div></aside>
+<main class="main"><header class="topbar"><div class="mobile-brand">NetTrack</div><div class="breadcrumb">Workspace <span>/</span> <b><?=e($pageTitle)?></b></div><div class="top-right"><span class="live-dot"></span> Local system <div class="top-avatar"><?=e(strtoupper(substr($_SESSION['full_name'] ?? 'A',0,1)))?></div></div></header><div class="content">

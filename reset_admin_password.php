@@ -6,7 +6,7 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/config.php';
 
 $username = $argv[1] ?? 'admin';
 $password = getenv('NEIS_ADMIN_PASSWORD');

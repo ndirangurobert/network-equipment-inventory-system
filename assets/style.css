@@ -253,3 +253,23 @@ input:focus, select:focus, textarea:focus { border-color: var(--brown-600); outl
   .mobile-brand { display: block; }
   .top-right { font-size: 0; }
 }
+
+/* Project information page */
+.about-panel { padding: 28px; }
+.about-hero { display: flex; align-items: center; gap: 20px; padding: 8px 0 26px; border-bottom: 1px solid var(--gray-100); }
+.brand-mark.large { width: 62px; height: 62px; border-radius: 16px; font-size: 22px; }
+.about-hero h2 { margin: 5px 0 7px; color: var(--brown-950); font-size: 22px; letter-spacing: -.03em; }
+.about-hero p { max-width: 720px; margin: 0; color: var(--gray-600); }
+.about-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 30px; padding: 25px 0; }
+.about-grid h3 { margin: 0 0 8px; color: var(--brown-900); font-size: 14px; }
+.about-grid p, .about-grid li { color: var(--gray-700); font-size: 12px; }
+.about-grid p { margin: 0; }
+.about-grid ul { margin: 0; padding-left: 18px; }
+.about-grid li { margin: 5px 0; }
+@media (max-width: 700px) {
+  .about-panel { padding: 18px; }
+  .about-hero { align-items: flex-start; gap: 13px; }
+  .brand-mark.large { width: 48px; height: 48px; border-radius: 12px; font-size: 17px; }
+  .about-hero h2 { font-size: 18px; }
+  .about-grid { grid-template-columns: 1fr; gap: 18px; }
+}

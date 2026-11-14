@@ -41,7 +41,7 @@ INSTALLATION ON UWAMP
 4. Start Apache in UwAmp and open:
    http://localhost/network_equipment_inventory/
 5. Set the administrator password locally from PowerShell in the application folder:
-   powershell -ExecutionPolicy Bypass -File .\\tools\\set_admin_password.ps1
+   powershell -ExecutionPolicy Bypass -File .\\set_admin_password.ps1
    The command securely prompts for a new password. No default administrator
    password is provided or displayed by the application.
 6. Sign in with the administrator username and the password you just set. Click

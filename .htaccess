@@ -1,1 +1,5 @@
-Require all denied
+Options -Indexes
+
+<FilesMatch "^(config\.php|.*\.(sqlite|db|ps1|log|ini))$">
+    Require all denied
+</FilesMatch>

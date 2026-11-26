@@ -7,6 +7,10 @@ computer is not working.
 
 FEATURES
 --------
+- Role-based login and dashboard for Administrator, Technician and Viewer
+- Administrator user management for creating and activating/deactivating Technician and Viewer accounts
+- Technician assignment of equipment, condition/status updates and maintenance logging
+- Viewer read-only access to inventory, maintenance history and reports
 - Login-protected dashboard
 - Equipment register: create, view, search, filter, edit and delete
 - Equipment details: asset tag, category, manufacturer, model, serial number,
@@ -44,9 +48,11 @@ INSTALLATION ON UWAMP
    powershell -ExecutionPolicy Bypass -File .\\set_admin_password.ps1
    The command securely prompts for a new password. No default administrator
    password is provided or displayed by the application.
-6. Sign in with the administrator username and the password you just set. Click
-   Equipment register to review sample records. Click Add equipment to add
-   your own equipment. Use Maintenance and Reports for the other features.
+6. Sign in with the administrator username and the password you just set.
+7. Open User management to create Technician and Viewer accounts.
+8. Add or edit equipment and assign each asset to a technician where appropriate.
+9. Technicians sign in to view assigned assets, update condition/status and log maintenance.
+10. Viewers sign in to inspect inventory, maintenance history and reports without editing.
 
 IF SQLITE IS NOT ENABLED
 ------------------------

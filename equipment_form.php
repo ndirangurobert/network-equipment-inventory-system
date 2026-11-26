@@ -1,12 +1,14 @@
 <?php
 require_once __DIR__.'/config.php'; require_admin(); $pdo=db();
+$technicians=$pdo->query("SELECT id,full_name FROM users WHERE role='Technician' AND is_active=1 ORDER BY full_name")->fetchAll();
 $id=(int)($_GET['id']??0); $editing=$id>0; $errors=[];
-$fields=['asset_tag','name','category','manufacturer','model','serial_number','ip_address','mac_address','location','department','assigned_to','purchase_date','warranty_expiry','status','condition_note','notes'];
+$fields=['asset_tag','name','category','manufacturer','model','serial_number','ip_address','mac_address','location','department','assigned_to','assigned_technician_id','purchase_date','warranty_expiry','status','condition_note','notes'];
 $data=array_fill_keys($fields,''); $data['status']='In Use'; $data['condition_note']='Good';
 if($editing){$st=$pdo->prepare('SELECT * FROM equipment WHERE id=?');$st->execute([$id]);$found=$st->fetch();if(!$found){flash('Equipment record not found.','error');redirect('equipment.php');}$data=array_merge($data,$found);}
 if($_SERVER['REQUEST_METHOD']==='POST'){
     verify_csrf();
     foreach($fields as $f) $data[$f]=trim((string)($_POST[$f]??''));
+    $data['assigned_technician_id']=$data['assigned_technician_id']!==''?(int)$data['assigned_technician_id']:null;
     if($data['asset_tag']==='')$errors[]='Asset tag is required.';
     if($data['name']==='')$errors[]='Equipment name is required.';
     if($data['category']==='')$errors[]='Category is required.';
@@ -41,6 +43,7 @@ $pageTitle=$editing?'Edit equipment':'Add equipment'; require 'header.php';
 <div><label>Location <em>*</em></label><input name="location" required value="<?=e($data['location'])?>" placeholder="e.g. Server Room"></div>
 <div><label>Department</label><input name="department" value="<?=e($data['department'])?>" placeholder="e.g. ICT"></div>
 <div><label>Assigned to</label><input name="assigned_to" value="<?=e($data['assigned_to'])?>" placeholder="Person, team or department"></div>
+<div><label>Assigned technician</label><select name="assigned_technician_id"><option value="">Not assigned</option><?php foreach($technicians as $tech): ?><option value="<?=(int)$tech['id']?>" <?=((string)($data['assigned_technician_id']??'' )===(string)$tech['id'])?'selected':''?>><?=e($tech['full_name'])?></option><?php endforeach; ?></select></div>
 </div></div>
 <div class="form-section"><div class="section-title"><span>03</span><div><h2>Lifecycle & condition</h2><p>Procurement, warranty and current status</p></div></div><div class="form-grid">
 <div><label>Purchase date</label><input type="date" name="purchase_date" value="<?=e($data['purchase_date'])?>"></div>

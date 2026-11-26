@@ -54,6 +54,23 @@ INSTALLATION ON UWAMP
 9. Technicians sign in to view assigned assets, update condition/status and log maintenance.
 10. Viewers sign in to inspect inventory, maintenance history and reports without editing.
 
+CREATE TECHNICIAN AND VIEWER DEMO LOGINS
+------------------------------------------
+After copying the application into UwAmp\\www and preserving the existing database:
+1. Open PowerShell in the application folder inside UwAmp\\www.
+2. Run: powershell -ExecutionPolicy Bypass -File .\\setup_demo_users.ps1
+3. The script creates or refreshes these local demonstration accounts and prints
+   randomly generated passwords in the PowerShell window:
+   - Username: technician1 (Technician role)
+   - Username: viewer1 (Viewer role)
+4. Keep the generated passwords private. The script does not change the existing
+   Administrator account or delete equipment or maintenance records.
+5. Sign in as Administrator and assign equipment to technician1. The Technician
+   account only sees equipment assigned to it. The Viewer account is read-only.
+
+The setup script is command-line only and should not be opened through a browser.
+For safety, do not commit or share the generated passwords.
+
 IF SQLITE IS NOT ENABLED
 ------------------------
 1. Open the php.ini file used by UwAmp's active PHP version.

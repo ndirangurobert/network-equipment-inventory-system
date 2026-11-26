@@ -3,8 +3,24 @@ declare(strict_types=1);
 session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off','httponly'=>true,'samesite'=>'Lax']);
 session_start();
 define('APP_NAME','Network Equipment Inventory');
-define('DB_DIR',dirname(__DIR__,2).DIRECTORY_SEPARATOR.'private'.DIRECTORY_SEPARATOR.'neis');
-define('DB_FILE',DB_DIR.DIRECTORY_SEPARATOR.'inventory.sqlite');
+function neis_database_directory(): string {
+    $current = __DIR__;
+    for ($level = 0; $level < 8; $level++) {
+        $candidate = $current . DIRECTORY_SEPARATOR . 'private' . DIRECTORY_SEPARATOR . 'neis';
+        if (is_dir($candidate)) {
+            return $candidate;
+        }
+        $parent = dirname($current);
+        if ($parent === $current) {
+            break;
+        }
+        $current = $parent;
+    }
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'private' . DIRECTORY_SEPARATOR . 'neis';
+}
+
+define('DB_DIR', neis_database_directory());
+define('DB_FILE', DB_DIR . DIRECTORY_SEPARATOR . 'inventory.sqlite');
 
 function db(): PDO {
     static $pdo=null;

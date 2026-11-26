@@ -1,8 +1,111 @@
 <?php
-require_once __DIR__.'/config.php';require_admin();$pdo=db();$errors=[];
-if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$action=$_POST['action']??'create';
- if($action==='create'){$name=trim((string)($_POST['full_name']??''));$username=trim((string)($_POST['username']??''));$password=(string)($_POST['password']??'');$role=trim((string)($_POST['role']??''));if($name==='')$errors[]='Full name is required.';if(!preg_match('/^[A-Za-z0-9._-]{3,40}$/',$username))$errors[]='Username must be 3–40 characters and use letters, numbers, dots, underscores or hyphens.';if(strlen($password)<10)$errors[]='Password must contain at least 10 characters.';if(!in_array($role,['Technician','Viewer'],true))$errors[]='Choose Technician or Viewer.';$check=$pdo->prepare('SELECT id FROM users WHERE username=?');$check->execute([$username]);if($check->fetch())$errors[]='That username already exists.';if(!$errors){$st=$pdo->prepare('INSERT INTO users(username,password_hash,full_name,role,is_active) VALUES(?,?,?,?,1)');$st->execute([$username,password_hash($password,PASSWORD_DEFAULT),$name,$role]);flash($role.' account created. Share the login details securely with the user.');redirect('users.php');}}
- if($action==='toggle'){$id=(int)($_POST['id']??0);if($id!==(int)$_SESSION['user_id']){$st=$pdo->prepare("UPDATE users SET is_active=CASE WHEN is_active=1 THEN 0 ELSE 1 END WHERE id=? AND role<>'Administrator'");$st->execute([$id]);flash('Account status updated.');redirect('users.php');}}
+require_once __DIR__.'/config.php';
+require_admin();
+$pdo=db();
+$errors=[];
+
+if($_SERVER['REQUEST_METHOD']==='POST'){
+    verify_csrf();
+    $action=$_POST['action']??'create';
+
+    if($action==='create'){
+        $name=trim((string)($_POST['full_name']??''));
+        $username=trim((string)($_POST['username']??''));
+        $password=(string)($_POST['password']??'');
+        $role=trim((string)($_POST['role']??''));
+        if($name==='')$errors[]='Full name is required.';
+        if(!preg_match('/^[A-Za-z0-9._-]{3,40}$/',$username))$errors[]='Username must be 3–40 characters and use letters, numbers, dots, underscores or hyphens.';
+        if(strlen($password)<10)$errors[]='Password must contain at least 10 characters.';
+        if(!in_array($role,['Technician','Viewer'],true))$errors[]='Choose Technician or Viewer.';
+        $check=$pdo->prepare('SELECT id FROM users WHERE username=?');
+        $check->execute([$username]);
+        if($check->fetch())$errors[]='That username already exists.';
+        if(!$errors){
+            $st=$pdo->prepare('INSERT INTO users(username,password_hash,full_name,role,is_active) VALUES(?,?,?,?,1)');
+            $st->execute([$username,password_hash($password,PASSWORD_DEFAULT),$name,$role]);
+            flash($role.' account created.');
+            redirect('users.php');
+        }
+    }
+
+    if($action==='edit'){
+        $id=(int)($_POST['id']??0);
+        $name=trim((string)($_POST['full_name']??''));
+        $username=trim((string)($_POST['username']??''));
+        if($id<=0)$errors[]='Invalid user account.';
+        if($name==='')$errors[]='Full name is required.';
+        if(!preg_match('/^[A-Za-z0-9._-]{3,40}$/',$username))$errors[]='Username must be 3–40 characters and use letters, numbers, dots, underscores or hyphens.';
+        $check=$pdo->prepare('SELECT id FROM users WHERE username=? AND id<>?');
+        $check->execute([$username,$id]);
+        if($check->fetch())$errors[]='That username is already in use.';
+        if(!$errors){
+            $st=$pdo->prepare("UPDATE users SET username=?, full_name=? WHERE id=? AND role IN ('Technician','Viewer')");
+            $st->execute([$username,$name,$id]);
+            flash('User account details updated.');
+            redirect('users.php');
+        }
+    }
+
+    if($action==='toggle'){
+        $id=(int)($_POST['id']??0);
+        if($id!==(int)$_SESSION['user_id']){
+            $st=$pdo->prepare("UPDATE users SET is_active=CASE WHEN is_active=1 THEN 0 ELSE 1 END WHERE id=? AND role<>'Administrator'");
+            $st->execute([$id]);
+            flash('Account status updated.');
+            redirect('users.php');
+        }
+    }
 }
-$users=$pdo->query('SELECT id,username,full_name,role,is_active,created_at FROM users ORDER BY created_at DESC')->fetchAll();$pageTitle='User management';require 'header.php';
-?><div class="page-heading"><div><div class="eyebrow">ACCESS CONTROL</div><h1>User management</h1><p>Create technician and viewer accounts and control their access.</p></div></div><?php show_flash();?><?php if($errors):?><div class="alert error"><ul><?php foreach($errors as $err):?><li><?=e($err)?></li><?php endforeach;?></ul></div><?php endif;?><div class="maintenance-grid"><section class="panel"><div class="panel-heading"><div><h2>Create account</h2><p>Only administrators can create user accounts.</p></div></div><form method="post" class="stack-form"><input type="hidden" name="csrf" value="<?=e(csrf_token())?>"><input type="hidden" name="action" value="create"><label>Full name</label><input name="full_name" required><label>Username</label><input name="username" required minlength="3" maxlength="40" autocomplete="off"><label>Temporary password</label><input type="password" name="password" required minlength="10" autocomplete="new-password"><label>Role</label><select name="role" required><option value="Technician">Technician</option><option value="Viewer">Viewer</option></select><button class="btn primary full" type="submit">Create account</button></form></section><section class="panel"><div class="panel-heading"><div><h2>System users</h2><p><?=count($users)?> account(s)</p></div></div><div class="table-wrap"><table><thead><tr><th>USER</th><th>ROLE</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody><?php foreach($users as $u):?><tr><td><b><?=e($u['full_name'])?></b><small class="block-muted"><?=e($u['username'])?></small></td><td><?=e($u['role'])?></td><td><?=$u['is_active']?'Active':'Inactive'?></td><td><?php if(strtolower($u['role'])!=='administrator'):?><form method="post"><input type="hidden" name="csrf" value="<?=e(csrf_token())?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?=(int)$u['id']?>"><button class="action-link" type="submit"><?=$u['is_active']?'Deactivate':'Activate'?></button></form><?php else:?>Protected<?php endif;?></td></tr><?php endforeach;?></tbody></table></div></section></div><?php require 'footer.php';?>
+
+$users=$pdo->query('SELECT id,username,full_name,role,is_active,created_at FROM users ORDER BY created_at DESC')->fetchAll();
+$pageTitle='User management';
+require 'header.php';
+?>
+<div class="page-heading"><div><div class="eyebrow">ACCESS CONTROL</div><h1>User management</h1><p>Create and manage staff accounts and their access.</p></div></div>
+<?php show_flash();?>
+<?php if($errors):?><div class="alert error"><ul><?php foreach($errors as $err):?><li><?=e($err)?></li><?php endforeach;?></ul></div><?php endif;?>
+<div class="maintenance-grid">
+<section class="panel">
+<div class="panel-heading"><div><h2>Create account</h2><p>Create permanent Technician or Viewer accounts.</p></div></div>
+<form method="post" class="stack-form">
+<input type="hidden" name="csrf" value="<?=e(csrf_token())?>">
+<input type="hidden" name="action" value="create">
+<label>Full name</label><input name="full_name" required>
+<label>Username</label><input name="username" required minlength="3" maxlength="40" autocomplete="off">
+<label>Password</label><input type="password" name="password" required minlength="10" autocomplete="new-password">
+<label>Role</label><select name="role" required><option value="Technician">Technician</option><option value="Viewer">Viewer</option></select>
+<button class="btn primary full" type="submit">Create account</button>
+</form>
+</section>
+<section class="panel">
+<div class="panel-heading"><div><h2>System users</h2><p><?=count($users)?> account(s)</p></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>USER</th><th>ROLE</th><th>STATUS</th><th>ACCOUNT ACTIONS</th></tr></thead><tbody>
+<?php foreach($users as $u):?>
+<tr>
+<td><b><?=e($u['full_name'])?></b><small class="block-muted"><?=e($u['username'])?></small></td>
+<td><?=e($u['role'])?></td><td><?=$u['is_active']?'Active':'Inactive'?></td>
+<td>
+<?php if(strtolower($u['role'])!=='administrator'):?>
+<details><summary class="action-link">Edit details</summary>
+<form method="post" class="stack-form" style="min-width:180px;margin-top:10px">
+<input type="hidden" name="csrf" value="<?=e(csrf_token())?>">
+<input type="hidden" name="action" value="edit">
+<input type="hidden" name="id" value="<?=(int)$u['id']?>">
+<label>Full name</label><input name="full_name" value="<?=e($u['full_name'])?>" required>
+<label>Username</label><input name="username" value="<?=e($u['username'])?>" minlength="3" maxlength="40" required>
+<button class="btn primary" type="submit">Save details</button>
+</form></details>
+<form method="post" style="margin-top:8px">
+<input type="hidden" name="csrf" value="<?=e(csrf_token())?>">
+<input type="hidden" name="action" value="toggle">
+<input type="hidden" name="id" value="<?=(int)$u['id']?>">
+<button class="action-link" type="submit"><?=$u['is_active']?'Deactivate':'Activate'?></button>
+</form>
+<?php else:?>Protected<?php endif;?>
+</td></tr>
+<?php endforeach;?>
+</tbody></table></div>
+</section>
+</div>
+<?php require 'footer.php';?>
